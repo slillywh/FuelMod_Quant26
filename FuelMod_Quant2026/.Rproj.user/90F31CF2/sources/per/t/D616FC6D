@@ -3,7 +3,7 @@
     "path": "~/GitHub/FuelMod_Quant26/FuelMod_Quant2026/FuelMod_Quant2026_Abundance.qmd",
     "project_path": "FuelMod_Quant2026_Abundance.qmd",
     "type": "quarto_markdown",
-    "hash": "1865207419",
+    "hash": "3057824842",
     "contents": "",
     "dirty": false,
     "created": 1793119471664.0,
@@ -16,16 +16,16 @@
         "Source": "Source",
         "docOutlineVisible": "1",
         "rmdVisualCollapsedChunks": "",
-        "rmdVisualModeLocation": "902:932",
+        "rmdVisualModeLocation": "1386:1058",
         "cursorPosition": "35,0",
         "scrollLine": "0"
     },
     "folds": "",
-    "lastKnownWriteTime": 1793121590,
+    "lastKnownWriteTime": 1793122685,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1793121590354,
+    "last_content_update": 1793122685590,
     "read_only": false,
     "read_only_alternatives": []
 }
