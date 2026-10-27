@@ -6,19 +6,27 @@ editor: visual
 
 ## Fuel Mod Quant Class 2026
 
-## Running Documents
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+## Gathering Libraries and Data Files
 
 ```{r}
-1 + 1
+library(tidyverse)
+#library(plyr)
+library(dplyr)
+library(readxl)
 ```
 
-You can add options to executable code like this
+Adding files
 
 ```{r}
-#| echo: false
-2 * 2
+Transect_Data <- list.files(path = "~/GitHub/FuelMod_Quant26/FuelMod_Quant2026",
+                       pattern = "*Data.xlsx",
+                       full.names = TRUE) |> 
+  lapply(read_excel,
+         na = "NA", sheet = "Data",
+         skip = 1) |> 
+  bind_rows()
+
+#All data is in the same Dataframe, now to clean it
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+## Data Cleaning
