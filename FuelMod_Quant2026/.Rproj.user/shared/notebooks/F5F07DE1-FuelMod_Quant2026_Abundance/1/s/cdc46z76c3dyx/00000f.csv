@@ -5,6 +5,5 @@
 "0","         na = ""NA"", sheet = ""Data"","
 "0","         skip = 1) |> "
 "0","  bind_rows()"
-"2","Error in utils::unzip(zip_path, list = TRUE) : 
-  zip file 'C:\Users\slillywh\Documents\GitHub\FuelMod_Quant26\FuelMod_Quant2026\~$Winter 2026 Veg Cover Raw Data.xlsx' cannot be opened
-"
+"0",""
+"0","#All data is in the same Dataframe, now to clean it"

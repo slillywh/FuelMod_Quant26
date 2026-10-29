@@ -9,8 +9,6 @@ editor: visual
 ## Gathering Libraries and Data Files
 
 ```{r}
-
-
 library(tidyverse)
 #library(plyr)
 library(dplyr)
@@ -49,4 +47,7 @@ str(Transect_Data_Clean)
 Transect_Data_Clean <- Transect_Data_Clean |> 
   rename(Date = 'mm/dd/yy', Site = 'CU/VB/GB', Block = `43469`, 
          Treatment = 'LS/LU/SS/SU', Transect_Point = '1-30', Transect_Point2026 = '1-15', Transect_Num = '1 or 2', Transect_Distance = '0-12m', Obs_Code = 'six-letter code', Obs_Name = 'full name', Description = '...13', Obs_Name2 = 'do not enter - autofill formula' )
+
+
+  
 ```
