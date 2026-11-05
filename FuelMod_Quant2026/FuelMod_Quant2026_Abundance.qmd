@@ -70,9 +70,9 @@ Transect_Data_Clean <- Transect_Data_Clean |>
                               Obs_Code == "UNK01" ~ "Unknown",
                               Obs_Code == "UNKPLANT" ~ "Unknown",
                               Obs_Code == "UNKNOWN" ~ "Unknown",
-                              Obs_Code == "M" ~ "Moss"
-                              Obs_Code == "BRANIC" ~ "BRANIG"
-                              Obs_Code == "CUCURBITA" ~ "CUCPAL"
+                              Obs_Code == "M" ~ "Moss",
+                              Obs_Code == "BRANIC" ~ "BRANIG",
+                              Obs_Code == "CUCURBITA" ~ "CUCPAL",
                               Obs_Code == "BHASPD" ~ "Unknown",
                               Obs_Code == "fesMYU" ~ "FESMYU",
                               TRUE ~ Obs_Code))
@@ -137,7 +137,7 @@ unique(Checklist$....2)
 
 #Now that we have a list, I need to look up the species below to see if they are fire resistant
 
-#Had to do data cleaning ON EXCEL
+#Had to do data cleaning ON EXCEL, like ALOT
 ```
 
 Now that that data is completed, will need to clean it and implement it into the count data
@@ -191,15 +191,15 @@ unique(Analysis_Full_Biotic$Obs_Code)
 # Data Analysis
 
 ```{r}
-ggplot(Transect_Analysis)+
+ggplot(Analysis_Full_Biotic)+
   aes(x = Abundance)+
   geom_histogram()
-
-ggplot(Transect_Analysis)+
-  aes(x = Abundance)+
-  geom_histogram()
-
 #Data does not look normal, may need to log transform it
+ggplot(Analysis_Full_Biotic)+
+  aes(x = log(Abundance))+
+  geom_histogram()
+
+#No log transform
 
 
 ```
