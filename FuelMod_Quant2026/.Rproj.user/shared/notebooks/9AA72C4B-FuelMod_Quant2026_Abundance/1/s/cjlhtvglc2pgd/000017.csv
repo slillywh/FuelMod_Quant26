@@ -1,0 +1,4 @@
+"0","#Data does not look normal, may need to log transform it"
+"0","ggplot(Analysis_Full_Biotic)+"
+"0","  aes(x = log(Abundance))+"
+"0","  geom_histogram()"

@@ -1,0 +1,3 @@
+"0","ggplot(Analysis_Full_Biotic)+"
+"0","  aes(x = Abundance)+"
+"0","  geom_histogram()"

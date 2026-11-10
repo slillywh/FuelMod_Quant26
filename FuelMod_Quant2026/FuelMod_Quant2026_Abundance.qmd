@@ -190,7 +190,22 @@ unique(Analysis_Full_Biotic$Obs_Code)
 
 # Data Analysis
 
+## Questions I am Trying to Answer
+
+-Look at non-native species vs native species
+
+-Pool by abiotic vs biotic cover
+
+-Could do a multivariate model
+
+-analysis looking seperately at fire resistance vs drought tolerance
+
+1.  How do native vs non native species differ in abundance counts?
+2.  Does Treatment affect native vs non native species abundance?
+3.  How do species that are drought resistant and/or fire resistant affect their abundance?
+
 ```{r}
+
 ggplot(Analysis_Full_Biotic)+
   aes(x = Abundance)+
   geom_histogram()
@@ -199,15 +214,14 @@ ggplot(Analysis_Full_Biotic)+
   aes(x = log(Abundance))+
   geom_histogram()
 
-#No log transform
 
+ggplot(Analysis_Full_Biotic)+
+  aes(x = sqrt(Abundance))+
+  geom_histogram()
 
+#Count data is not normal, will need to do a Poisson distribution
 ```
 
-Look at non-native species vs native species
-
-Pool by abiotic vs biotic cover
-
-Could do a multivariate model
-
-- analysis looking seperately at fire resistance vs drought tolerance
+```{r}
+Poisson_Model_Biotic <- (Abundance ~ Treatment * Obs_Code * Status * Fire_Resistant * Drought_Tolerance + (1|Block) + )
+```
