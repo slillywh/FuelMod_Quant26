@@ -79,7 +79,7 @@ Transect_Data_Clean <- Transect_Data_Clean |>
                               TRUE ~ Obs_Code))
 
 unique(Transect_Data_Clean$Obs_Code)
-
+#Changed some misinputs as well as combined unknown plants into one UNKNOWN category
 #It is mostly clean! time to prepare the data for analysis
 ```
 
@@ -255,11 +255,16 @@ Analysis_Full_Biotic$Transect_Num <- as.factor(Analysis_Full_Biotic$Transect_Num
     #Data is right skewed 
 
 
+    Model_Biotic_Q1_Log2 <- lmer(log(Abundance) ~ Treatment * Status +  Fire_Resistant + Drought_Tolerance + (1| Site/Block)+(1| Obs_Code), data = Analysis_Full_Biotic)
+
+    plot(Model_Biotic_Q1_Log2)
+
+    ggqqplot(residuals(Model_Biotic_Q1_Log2))
+
     Model_Biotic_Q1_Log <- lmer(log(Abundance) ~ Treatment * Status + Obs_Code + Fire_Resistant + Drought_Tolerance + (1| Site/Block), data = Analysis_Full_Biotic)
 
-    plot(Model_Biotic_Q1_Log)
 
-    ggqqplot(residuals(Model_Biotic_Q1_Log))
+
 
     #The Log transformation looks better
     #Levene's Test?
