@@ -144,6 +144,10 @@ unique(Checklist$....2)
 Now that that data is completed, will need to clean it and implement it into the count data
 
 ```{r}
+
+```
+
+```{r}
 head(Checklist)
 Checklist <- Checklist |> 
   rename(Scientific_Name ='....2',
