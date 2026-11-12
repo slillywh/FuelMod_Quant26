@@ -202,7 +202,7 @@ unique(Analysis_Full_Biotic$Obs_Code)
 -analysis looking seperately at fire resistance vs drought tolerance
 
 1.  How do native vs non native species differ in abundance counts?
-2.  Does Treatment affect native vs non native species abundance?
+2.  Does diversity (shannon diversity index) differ between transects?
 3.  How do species that are drought resistant and/or fire resistant affect their abundance?
 
 ```{r}
@@ -235,73 +235,79 @@ Analysis_Full_Biotic$Transect_Num <- as.factor(Analysis_Full_Biotic$Transect_Num
 
 1.  How do native vs non native species differ in abundance counts?
 
-    ```{r}
+    1.  Look at sum of native vs non-native (pool native and non-native) - Pool abundance
+
+    2.  Shannon diversity per transect for native vs non-native
+
+    3.  Plug in date in the random effect
+
+        ```{r}
 
 
-    #Poisson_Model_Biotic <- glm(Abundance ~ Treatment * Obs_Code * Status * Fire_Resistant * Drought_Tolerance + (1| Site/Block), data = Analysis_Full_Biotic,
-                        #     family = poisson(link = "log"))
+        #Poisson_Model_Biotic <- glm(Abundance ~ Treatment * Obs_Code * Status * Fire_Resistant * Drought_Tolerance + (1| Site/Block), data = Analysis_Full_Biotic,
+                            #     family = poisson(link = "log"))
 
-    #Poisson is not an option because I did not do raw counts, I changed them into a continuous variable
-
-
-    Model_Biotic_Q1 <- lmer(Abundance ~ Treatment * Status + Obs_Code + Fire_Resistant + Drought_Tolerance + (1| Site/Block), data = Analysis_Full_Biotic)
+        #Poisson is not an option because I did not do raw counts, I changed them into a continuous variable
 
 
-    plot(Model_Biotic_Q1)
-    #The data is super right skewed...
-
-    ggqqplot(residuals(Model_Biotic_Q1))
-
-    #Data is right skewed 
+        Model_Biotic_Q1 <- lmer(Abundance ~ Treatment * Status + Obs_Code + Fire_Resistant + Drought_Tolerance + (1| Site/Block), data = Analysis_Full_Biotic)
 
 
-    Model_Biotic_Q1_Log <- lmer(log(Abundance) ~ Treatment * Status + Obs_Code + Fire_Resistant + Drought_Tolerance + (1| Site/Block), data = Analysis_Full_Biotic)
+        plot(Model_Biotic_Q1)
+        #The data is super right skewed...
 
-    plot(Model_Biotic_Q1_Log)
+        ggqqplot(residuals(Model_Biotic_Q1))
 
-    ggqqplot(residuals(Model_Biotic_Q1_Log))
-
-    #The Log transformation looks better
-    #Levene's Test?
-
-    summary(Model_Biotic_Q1_Log)
-    anova(Model_Biotic_Q1_Log)
-
-    #This makes sense, there is a big difference between Obs_Code (Species) but not between treatments
-
-    #Going to try to put species as a random effect
-
-    Model_Biotic_Q1_2 <- lmer(Abundance ~ Treatment * Status + Fire_Resistant + Drought_Tolerance + (1| Site/Block) + (1| Obs_Code), data = Analysis_Full_Biotic)
-
-    plot(Model_Biotic_Q1_2)
-
-    ggqqplot(residuals(Model_Biotic_Q1_2))
-
-    summary(Model_Biotic_Q1_2)
-    anova(Model_Biotic_Q1_2)
-
-    #With this model there is no statistical significance
-
-    #Post HOC test?
-    ```
-
-    ```{r}
-    #Could try a Gamma distribution, since the data is right skewed
-
-    library(glmmTMB)
-    #library(car)
-
-    Gamma_Model_Biotic_Q1 <- glmmTMB(Abundance ~ Treatment * Status + Fire_Resistant + Drought_Tolerance + (1| Site/Block) + (1| Obs_Code), data = Analysis_Full_Biotic,
-                                      family = Gamma(link="log"))
-
-    summary(Gamma_Model_Biotic_Q1)
-
-    ggqqplot(residuals(Gamma_Model_Biotic_Q1))
-
-    #This does not look better then the Log
-    #Looks almost exactlty the same
-    car::Anova(Gamma_Model_Biotic_Q1, type = 3)
+        #Data is right skewed 
 
 
+        Model_Biotic_Q1_Log <- lmer(log(Abundance) ~ Treatment * Status + Obs_Code + Fire_Resistant + Drought_Tolerance + (1| Site/Block), data = Analysis_Full_Biotic)
 
-    ```
+        plot(Model_Biotic_Q1_Log)
+
+        ggqqplot(residuals(Model_Biotic_Q1_Log))
+
+        #The Log transformation looks better
+        #Levene's Test?
+
+        summary(Model_Biotic_Q1_Log)
+        anova(Model_Biotic_Q1_Log)
+
+        #This makes sense, there is a big difference between Obs_Code (Species) but not between treatments
+
+        #Going to try to put species as a random effect
+
+        Model_Biotic_Q1_2 <- lmer(Abundance ~ Treatment * Status + Fire_Resistant + Drought_Tolerance + (1| Site/Block) + (1| Obs_Code), data = Analysis_Full_Biotic)
+
+        plot(Model_Biotic_Q1_2)
+
+        ggqqplot(residuals(Model_Biotic_Q1_2))
+
+        summary(Model_Biotic_Q1_2)
+        anova(Model_Biotic_Q1_2)
+
+        #With this model there is no statistical significance
+
+        #Post HOC test?
+        ```
+
+        ```{r}
+        #Could try a Gamma distribution, since the data is right skewed
+
+        library(glmmTMB)
+        #library(car)
+
+        Gamma_Model_Biotic_Q1 <- glmmTMB(Abundance ~ Treatment * Status + Fire_Resistant + Drought_Tolerance + (1| Site/Block) + (1| Obs_Code), data = Analysis_Full_Biotic,
+                                          family = Gamma(link="log"))
+
+        summary(Gamma_Model_Biotic_Q1)
+
+        ggqqplot(residuals(Gamma_Model_Biotic_Q1))
+
+        #This does not look better then the Log
+        #Looks almost exactlty the same
+        car::Anova(Gamma_Model_Biotic_Q1, type = 3)
+
+
+
+        ```
