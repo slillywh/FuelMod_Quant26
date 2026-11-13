@@ -16,6 +16,7 @@ library(dplyr)
 library(readxl) 
 library(ggpubr) 
 library(lmerTest)
+library(lme4)
 ```
 
 Adding files
@@ -203,7 +204,7 @@ unique(Analysis_Full_Biotic$Obs_Code)
 -analysis looking seperately at fire resistance vs drought tolerance
 
 1.  How do native vs non native species differ in abundance counts?
-2.  Does diversity (shannon diversity index) differ between transects?
+2.  Does diversity (shannon diversity index) differ between Sites?
 3.  How do species that are drought resistant and/or fire resistant affect their abundance
 
 ```{r}
@@ -231,7 +232,7 @@ Analysis_Full_Biotic$Transect_Num <- as.factor(Analysis_Full_Biotic$Transect_Num
 
 ```
 
-### QUESTION 1:
+### QUESTION: 1
 
 1.  How do native vs non native species differ in abundance counts in Treatments?
 
@@ -242,36 +243,139 @@ Analysis_Full_Biotic$Transect_Num <- as.factor(Analysis_Full_Biotic$Transect_Num
 ```{r}
 #Need to sum species into Native vs Non-native for counts (Species adds too much for the model to handle) 
 #Will remove unknown species as well
-
-
-library(lubridate)
-
-Question_1 <-Analysis_Full_Biotic |> 
-  group_by(Date, Site, Block, Treatment, Transect_Num, Abundance, Status, Fire_Resistant, Drought_Tolerance) |> 
-  summarise(Count = (n())) |> 
-  mutate(Total_Abundance = Abundance*Count)
-
-ggplot(Question_1)+
-  aes(x = Total_Abundance)+
-  geom_histogram()
-
-ggplot(Question_1)+
-  aes(x = Total_Abundance)+
-  geom_histogram()
 #Need to combine certain dates, they are too spread out
 #Or I can just simplify dates into month-year (this should help)
 
+library(lubridate)
+
+
+
+Question_1 <-Analysis_Full_Biotic
+
+Question_1$Date <-floor_date(Question_1$Date, "month")
+#Work around, had to convert the dates into the first of every month but it worked!
+
 Question_1 <- Question_1 |> 
-  mutate(Year_Month = floor_date(Date, "month")) |> 
-  group_by(Year_Month, Site, Block, Treatment, Transect_Num,Total_Abundance, Fire_Resistant, Drought_Tolerance) |> 
-  summarise()
+  group_by(Date, Site, Block, Treatment, Transect_Num, Abundance, Status, Fire_Resistant, Drought_Tolerance) |> 
+  summarise(Count = (n())) |> 
+  mutate(Total_Abundance = Abundance*Count) |> 
+  filter(!is.na(Status))
 
+ggplot(Question_1)+
+  aes(x = Total_Abundance)+
+  geom_histogram()
 
-Question_1_Native <- Question_1 |> 
-  filter(Status != "Non-Native")
+#Model_Q1 <- lmer(Total_Abundance ~ Treatment * Status + (1| Site/Block) + (1|Date), data = Question_1)
+#Boundary is too big
+#summary(Model_Q1)$varcor
+#the stdev between site:block was 0, this was the culprit, removing block
 
-  
-Model_Q1_Native <- lmer(Total_Abundance ~ Treatment + (1| Site/Block) + (1|Date), data = Question_1_Native)
+Model_Q1 <- lmer(Total_Abundance ~ Treatment * Status + (1| Site) + (1|Date), data = Question_1)
 
-unique(Question_1_Native$Date)
+plot(Model_Q1)
+
+ggqqplot(residuals(Model_Q1))
+
+#Super skewed, going to try log transformation
+
+Model_Q1_Log <- lmer(log(Total_Abundance) ~ Treatment * Status + (1| Site) + (1|Date), data = Question_1)
+
+plot(Model_Q1_Log)
+
+ggqqplot(residuals(Model_Q1_Log))
+
+#Looks better? Going to run with this
+
+summary(Model_Q1_Log)
+anova(Model_Q1_Log)
+
+#
 ```
+
+#### Question 1 Result
+
+From the model, it looks like there is a significant difference in species abundance, but no difference between treatments
+
+```{r}
+
+emmeans::emmeans(Model_Q1_Log, pairwise ~ Status, adjust = "Tukey")
+
+#Native and non-native plant abundances were different, not very shocking
+```
+
+```{r}
+Question_1_Summary <- Question_1 |> 
+  group_by(Treatment,Status, Site) |> 
+  summarise(Mean_Abundance = mean(Total_Abundance, na.rm = TRUE),
+            sd_Abundance = sd(Total_Abundance, na.rm = TRUE))
+  summary(Question_1_Summary)
+  
+  ggplot(Question_1_Summary,
+    aes(x = Site, y = Mean_Abundance, fill = Status))+
+    geom_col(position = position_dodge(width = 0.9)) +
+    geom_errorbar(aes(ymin = Mean_Abundance - sd_Abundance,
+                      ymax = Mean_Abundance + sd_Abundance,
+                      group = Status),
+                  position = position_dodge(width = 0.9),
+                  width = 0.2) +
+    facet_wrap(~ Treatment) +
+    theme_bw()
+  
+  #Invasive species dominate in every site and within every treatment :()
+  #The sd seems to be very wide though
+```
+
+### QUESTION: 2
+
+-Does diversity (shannon diversity index) differ between Sites?
+
+```{r}
+library(vegan)
+
+#Need to use an old dataset to turn it into a shannon diversity index
+
+Question_2 <- Analysis_Full_Biotic |> 
+  group_by(Site, Obs_Code) |> 
+  summarise(Count = n())
+  
+Shannon <- diversity(Question_2$Count, index = "shannon")
+  
+Shannon
+#The shannon number is 3.94, showing some diversity
+
+Question_2_Wide <- pivot_wider(Question_2,
+  names_from = c(Site),
+values_from = c(Count))
+
+Question_2_Wide
+
+Question_2_Final <- Question_2 |> 
+  group_by(Site) |>
+  summarise(Count = n())
+  
+Question_2_Final
+
+Question_2_Wide[is.na(Question_2_Wide)] <- 0
+
+rownames(Question_2_Wide) <- Question_2_Wide$Obs_Code
+
+Question_2_Matrix <- Question_2_Wide[2:ncol(Question_2_Wide)] |> 
+  as.matrix()
+
+
+
+diversity(Question_2_Matrix, index = "shannon", MARGIN = 2)
+
+#GB has the highest shannon diversity between sites
+
+
+diversity(Question_2_Matrix, index = "simpson", MARGIN = 2)
+
+#all had high diversity, with GB being the highest
+
+
+```
+
+### Question: 3
+
+-How do species that are drought resistant and/or fire resistant affect their abundance
