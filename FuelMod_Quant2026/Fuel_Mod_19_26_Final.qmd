@@ -4,8 +4,6 @@ format: html
 editor: visual
 ---
 
-## 
-
 ## Fuel Mod Quant Class 2026
 
 ## Gathering Libraries and Data Files
@@ -376,6 +374,54 @@ diversity(Question_2_Matrix, index = "simpson", MARGIN = 2)
 
 ```
 
-### Question: 3
+#### Question 2 Results
+
+-GB has the highest shannon diversity between sites
+
+```         
+   CU       GB       VB  
+   2.869804 3.049139 2.898145 
+```
+
+-all had high diversity, with GB being the highest
+
+```         
+   CU        GB        VB 
+   0.9236111 0.9368906 0.9210994 
+```
+
+### QUESTION: 3
 
 -How do species that are drought resistant and/or fire resistant affect their abundance
+
+```{r}
+Question_3 <- Analysis_Full_Biotic |> 
+  group_by(Date, Site, Obs_Code, Abundance, Status, Fire_Resistant, Drought_Tolerance) |> 
+  summarise(Count = (n())) |> 
+  mutate(Total_Abundance = Abundance*Count) |> 
+  filter(!is.na(Status))
+
+```
+
+I assumed that all non-native species were drought vulnerable and fire vulnerable due to time constraints.
+
+If this was published analysis, would not make that assumption.
+
+```{r}
+ggplot(Question_3)+
+  aes(x = Total_Abundance)+
+  geom_histogram()
+
+#This data almost looks normal!
+
+ggplot(Question_3)+
+  aes(x = sqrt(Total_Abundance))+
+  geom_histogram()
+
+#Square root doesn't look that bad
+
+#will stick with normal 
+
+Model_Q3 <- lmer(Total_Abundance ~ Fire_Resistant * Drought_Tolerance +(1| Site) + (1|Date), data = Question_3)
+
+```
