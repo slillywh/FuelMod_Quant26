@@ -216,17 +216,17 @@ Grapics_Biotic |>
   ggplot()+
   aes(x = Treatment, y = Abundance, fill = Obs_Code)+
     geom_col(position = position_dodge(width = 0.9)) +
-    facet_wrap(~ Site) +
+    #facet_wrap(~ Site) +
   theme_bw()
 #BROMAD is brome grass
+#EUPMAC is spotted spurge
 
 Grapics_Biotic |> 
-  filter(Status != "Non-Native")
-|> 
+  filter(Status != "Non-Native") |> 
   ggplot()+
   aes(x = Treatment, y = Abundance, fill = Obs_Code)+
   geom_col(position = position_dodge(width = 0.9)) +
-  facet_wrap(~ Site) +
+  #facet_wrap(~ Site) +
   theme_bw()
 #DEIFAS = Clustered Tarweed
 ```
@@ -322,6 +322,11 @@ ggqqplot(residuals(Model_Q1))
 
 Model_Q1_Log <- lmer(log(Total_Abundance) ~ Treatment * Status + (1| Site) + (1|Date), data = Question_1)
 
+#Change to poisson
+#Leave the 30, double the 15s
+#split them into native and non-native, looking at treatment
+#Switch to blocking
+
 plot(Model_Q1_Log)
 
 ggqqplot(residuals(Model_Q1_Log))
@@ -347,20 +352,20 @@ emmeans::emmeans(Model_Q1_Log, pairwise ~ Status, adjust = "Tukey")
 
 ```{r}
 Question_1_Summary <- Question_1 |> 
-  group_by(Treatment,Status, Site) |> 
+  group_by(Treatment,Status) |> 
   summarise(Mean_Abundance = mean(Total_Abundance, na.rm = TRUE),
             sd_Abundance = sd(Total_Abundance, na.rm = TRUE))
   summary(Question_1_Summary)
   
   ggplot(Question_1_Summary,
-    aes(x = Site, y = Mean_Abundance, fill = Status))+
+    aes(x = Treatment, y = Mean_Abundance, fill = Status))+
     geom_col(position = position_dodge(width = 0.9)) +
     geom_errorbar(aes(ymin = Mean_Abundance - sd_Abundance,
                       ymax = Mean_Abundance + sd_Abundance,
                       group = Status),
                   position = position_dodge(width = 0.9),
                   width = 0.2) +
-    facet_wrap(~ Treatment) +
+    #facet_wrap(~ Treatment) +
     theme_bw()
   
   #Invasive species dominate in every site and within every treatment :()
@@ -440,7 +445,7 @@ diversity(Question_2_Matrix, index = "simpson", MARGIN = 2)
 
 ```{r}
 Question_3 <- Analysis_Full_Biotic |> 
-  group_by(Date, Site, Obs_Code, Abundance, Status, Fire_Resistant, Drought_Tolerance) |> 
+  group_by(Date, Site, Abundance, Status, Fire_Resistant, Drought_Tolerance) |> 
   summarise(Count = (n())) |> 
   mutate(Total_Abundance = Abundance*Count) |> 
   filter(!is.na(Status))
