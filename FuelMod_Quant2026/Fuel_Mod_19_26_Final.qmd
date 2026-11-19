@@ -535,3 +535,112 @@ emmeans::emmeans(Model_Q3_Drought, pairwise ~ Drought_Tolerance, adjust = "Tukey
   #facet_wrap(~ Drought_Tolerance) +
   #theme_bw()
 ```
+
+Amy's Comments\
+-Change to poisson
+
+-Leave the 30, double the 15s
+
+-split them into native and non-native, looking at treatment
+
+-Switch to blocking instead of site
+
+## Swap to Poisson
+
+```{r}
+#Time to swap abundance counts to whole integers so I will be able to use Poisson
+
+Poisson_2026 <- Transect_Data_Clean |> 
+  filter(Transect_Point2026 > 0)
+
+Poisson_2026<-Poisson_2026 |> 
+  group_by(Date, Site, Block, Treatment, Transect_Num, Obs_Code) |> 
+  summarise(Abundance = ((n()*2)))
+
+#I think that worked!!! lets try with the other data
+
+Poisson_Others <- Transect_Data_Clean |> 
+  filter(Transect_Point > 0)
+
+Poisson_Others<-Poisson_Others |> 
+  group_by(Date, Site, Block, Treatment, Transect_Num, Obs_Code) |> 
+  summarise(Abundance = ((n())))
+
+```
+
+```{r}
+Poisson_Analysis<-full_join(Poisson_Others,Poisson_2026)
+
+unique(Poisson_Analysis$Obs_Code)
+
+
+Poisson_Analysis <- full_join(Poisson_Analysis, Checklist)
+
+#Now I want to remove all of the abiotic factors
+
+unique(Analysis_Full$Obs_Code)
+
+Poisson_Analysis<-Poisson_Analysis |> 
+  mutate(Obs_Code = case_when(Obs_Code == "Non Native Grass Species" ~ "Unknown",
+                              Obs_Code == "CALMAC?" ~ "Unknown",
+                              Obs_Code == "UNKNNGRASS" ~ "Unknown",
+                              TRUE ~ Obs_Code))
+unique(Poisson_Analysis$Obs_Code)
+
+Poisson_Analysis_Biotic <- Poisson_Analysis |> 
+  filter(Obs_Code != "Bare Ground",
+         Obs_Code != "Litter",
+         Obs_Code != "Rock",
+         Obs_Code != "Stem",
+         Obs_Code != "Cryptobiotic Crust",
+         Obs_Code != "Moss",
+         Obs_Code != "UNK Value",
+         Obs_Code != "Dead",
+         Obs_Code != "Thatch")
+
+
+```
+
+### Q1 Poisson
+
+```{r}
+
+P_Question_1 <-Poisson_Analysis_Biotic
+
+P_Question_1$Date <-floor_date(P_Question_1$Date, "month")
+#Work around, had to convert the dates into the first of every month but it worked!
+
+P_Question_1 <- P_Question_1 |> 
+  group_by(Date, Site, Block, Treatment, Transect_Num, Abundance, Status, Fire_Resistant, Drought_Tolerance) |> 
+  summarise(Count = (n())) |> 
+  mutate(Total_Abundance = Abundance*Count) |> 
+  filter(!is.na(Status))
+
+ggplot(P_Question_1)+
+  aes(x = Total_Abundance)+
+  geom_histogram()
+
+ggplot(P_Question_1)+
+  aes(x = log(Total_Abundance))+
+  geom_histogram()
+
+P_Q1 <- glmer(Total_Abundance ~ Treatment * Status + (1|Block) + (1|Date), data = P_Question_1, family = poisson)
+
+plot(P_Q1)
+
+ggqqplot(residuals(P_Q1))
+
+
+P_Q1_Log <- glmer(Total_Abundance ~ Treatment * Status + (1|Block) + (1|Date), data = P_Question_1, family = poisson(link = "log"))
+
+
+plot(P_Q1_Log)
+
+ggqqplot(residuals(P_Q1_Log))
+
+#Looks better? Going to run with this
+
+summary(P_Q1_Log)
+anova(P_Q1_Log)
+
+```
